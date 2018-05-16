@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FakeGPS</string>
+    <string name="notification">Running Mock GPS Service</string>
 </resources>
