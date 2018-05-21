@@ -19,7 +19,7 @@ public class LocationTool {
         LatLng latLng=delta(latitude,longitude);
         location.setLatitude(latLng.latitude);
         location.setLongitude(latLng.longitude);
-        Log.i("asdf", "la:" + latLng.latitude + " lo:" + latLng.longitude);
+        //Log.i("asdf", "la:" + latLng.latitude + " lo:" + latLng.longitude);
         location.setSpeed(speed);
         location.setAltitude(2.0f);
         location.setAccuracy(3.0f);

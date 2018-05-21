@@ -7,9 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
+
+import com.amap.api.maps2d.model.LatLng;
 
 /**
  * Created by XuCanHui on 2018/5/9.
@@ -19,9 +22,22 @@ public class MockGpsService extends Service {
 
     private static final int NOTIFICATION_ID = 9999;
 
+    public static final String CMD = "cmd";
+    public static final String PARM = "parm";
+    public static final String LATLNG = "latLng";
+
+    public static final int CMD_START = 1;
+    public static final int CMD_UPDATE = 2;
+
+
     private LocationManager mLocationManager;
 
     private volatile boolean running = true;
+
+    private volatile LatLng mLatLng = new LatLng(24.883320, 118.840340);
+
+    private volatile double mLat = 224.883320;
+    private volatile double mLng = 118.840340;
 
     @Override
     public void onCreate() {
@@ -33,8 +49,23 @@ public class MockGpsService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.v(TAG, "onStartCommand() called");
+        if (intent != null) {
+            int cmd = intent.getIntExtra(CMD, CMD_START);
+            switch (cmd) {
+                case CMD_START:
+                    startMockLocation();
+                    break;
+                case CMD_UPDATE:
+                    Bundle parm = intent.getBundleExtra(PARM);
+                    mLatLng = (LatLng) parm.get(LATLNG);
+                    mLat = mLatLng.latitude;
+                    mLng = mLatLng.longitude;
+                    Log.i("asdf", "la:" + mLat + " lo:" + mLng);
+            }
+        } else {
+            startMockLocation();
+        }
 
-        startMockLocation();
         return START_STICKY;
     }
 
@@ -73,7 +104,9 @@ public class MockGpsService extends Service {
             @Override
             public void run() {
                 while (running) {
-                    LocationTool.setLocation(mLocationManager, LocationManager.GPS_PROVIDER, 24.883320, 118.840340);
+                    //LocationTool.setLocation(mLocationManager, LocationManager.GPS_PROVIDER, 24.883320, 118.840340);
+                    Log.i("asdf", "xla:" + mLat + " xlo:" + mLng);
+                    LocationTool.setLocation(mLocationManager, LocationManager.GPS_PROVIDER, mLat, mLng);
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -83,6 +116,15 @@ public class MockGpsService extends Service {
             }
         }).start();
 
+    }
+
+    public static void updateLocation(Context context, LatLng latLng) {
+        Intent intent = new Intent(context, MockGpsService.class);
+        Bundle parm = new Bundle();
+        parm.putParcelable(LATLNG, latLng);
+        intent.putExtra(PARM, parm);
+        intent.putExtra(CMD, CMD_UPDATE);
+        context.startService(intent);
     }
 
     @Override
